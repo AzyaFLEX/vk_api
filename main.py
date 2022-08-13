@@ -11,10 +11,34 @@ def get_chat_users(_vk, chat_id) -> list:
     return list(_vk.messages.getChatUsers(chat_id=chat_id))
 
 
+def get_public_list(_vk, user_list: list) -> dict:
+    _data = {}
+    for user_id in user_list:
+        try:
+            public_id_list = _vk.users.getSubscriptions(user_id=user_id, extended=0)['groups']['items']
+            for group_id in public_id_list:
+                if group_id not in _data:
+                    _data[group_id] = 0
+                _data[group_id] += 1
+        except vk_api.exceptions.ApiError:
+            pass
+    return {elm: _data[elm] for elm in sorted(_data, key=lambda x: 1 / _data[x])}
+
+
+def get_group_name(_vk, id):
+    _data = _vk.groups.getById(group_id=id)
+    return _data[0]['name']
+
+
+def show_list(_vk, _data: dict) -> None:
+    for index, elm in enumerate(list(_data)[:100]):
+        print(f'{index + 1}. {get_group_name(_vk, elm)} - {_data[elm]}')
+
+
 if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read('config.ini')
     session = vk_api.VkApi(token=config['account']['token'])
     vk = session.get_api()
-
-    data = get_chat_users(vk, chat_id=config['group']['id'])
+    data = get_public_list(vk, get_chat_users(vk, chat_id=config['group']['id']))
+    show_list(vk, data)
