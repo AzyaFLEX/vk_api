@@ -2,6 +2,18 @@ import configparser
 import vk_api
 
 
+def get_config(filename):
+    _config = configparser.ConfigParser()
+    _config.read(filename)
+    return _config
+
+
+def create_session(_config):
+    session = vk_api.VkApi(token=_config['account']['token'])
+    _vk = session.get_api()
+    return _vk
+
+
 def get_chat_id_by_name(_vk, name='') -> dict:
     _data = _vk.messages.searchConversations(q=name, count=1)['items'][0]
     return _data['peer']['local_id']
@@ -36,9 +48,6 @@ def show_list(_vk, _data: dict) -> None:
 
 
 if __name__ == '__main__':
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    session = vk_api.VkApi(token=config['account']['token'])
-    vk = session.get_api()
-    data = get_public_list(vk, get_chat_users(vk, chat_id=config['group']['id']))
-    show_list(vk, data)
+    config = get_config('config.ini')
+    vk = create_session(config)
+    show_list(vk, get_public_list(vk, get_chat_users(vk, chat_id=config['group']['id'])))
