@@ -38,8 +38,8 @@ def get_public_list(_vk, user_list: list) -> dict:
     return {elm: _data[elm] for elm in sorted(_data, key=lambda x: 1 / _data[x])}
 
 
-def get_group_name(_vk, id):
-    _data = _vk.groups.getById(group_id=id)
+def get_group_name(_vk, _id):
+    _data = _vk.groups.getById(group_id=_id)
     return _data[0]['name']
 
 
@@ -48,7 +48,7 @@ def show_list(_vk, _data: dict) -> None:
         print(f'{index + 1}. {get_group_name(_vk, elm)} - {_data[elm]}')
 
 
-def get_top_publics():
+def get_top_public_list():
     _config = get_config('config.ini')
     _vk = create_session(_config)
     show_list(_vk, get_public_list(_vk, get_chat_users(_vk, chat_id=_config['group']['id'])))
@@ -62,11 +62,11 @@ def get_users_name_by_id(_vk, user_id):
 
 def find_connection(_vk, main_id, start_id, white_list: list = None, black_list: list = None, max_length=4):
     def print_chain(_chain: list):
-        print(" -> ".join(map(lambda id: get_users_name_by_id(_vk, id), _chain + [main_id])))
+        print(" -> ".join(map(lambda _id: get_users_name_by_id(_vk, _id), _chain + [main_id])))
 
     @lru_cache()
-    def get_user_friends(id):
-        return _vk.friends.get(user_id=id)['items']
+    def get_user_friends(_id):
+        return _vk.friends.get(user_id=_id)['items']
 
     queue = [[start_id]]
     check = _vk.friends.get(user_id=main_id)['items']
@@ -97,4 +97,4 @@ def find_connection(_vk, main_id, start_id, white_list: list = None, black_list:
 if __name__ == '__main__':
     config = get_config('config.ini')
     vk = create_session(config)
-    find_connection(vk, 291642276, 250802218)
+    find_connection(vk, 291642276, 216441677)
